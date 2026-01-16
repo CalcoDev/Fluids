@@ -38,6 +38,14 @@ public partial class SaintVenandSimulation : Node
     public float Cfl { get; set; } = 0.5f;
 
 
+    [ExportGroup("Initial Conditions")]
+    [Export]
+    public float InitialDepth { get; set; } = 0.5f;
+
+    [Export]
+    public float InitialVelocity { get; set; } = 0.0f;
+
+
     [ExportGroup("Debug")]
     [Export]
     public bool DebugDraw { get; set; } = true;
@@ -80,6 +88,8 @@ public partial class SaintVenandSimulation : Node
     {
         base._Process(delta);
 
+        _simulation.Step((float)delta, _channelWidth);
+
         if (DebugDraw)
         {
             DrawDebug();
@@ -92,6 +102,31 @@ public partial class SaintVenandSimulation : Node
     }
 
     #endregion
+
+
+    #region Simulation Helpers
+
+    public Vector3 GetCellWorldPosition(int cellIndex)
+    {
+        float x = (cellIndex + 0.5f) * _dx;
+        Vector3 pos = _originWorld + _axisNormalized * x;
+        pos.Y = _bedY - BedSlope * x + _simulation.H[cellIndex];
+        return pos;
+    }
+
+    public void SetCellState(int startIndex, int count, float depth, float velocity)
+    {
+        int end = Math.Min(startIndex + count, _simulation.Params.NumCells);
+        for (int i = startIndex; i < end; i++)
+        {
+            _simulation.SetDepth(i, depth);
+            _simulation.SetDischarge(i, depth * velocity);
+        }
+    }
+
+    #endregion
+
+
 
     private void Initialise()
     {
@@ -107,6 +142,7 @@ public partial class SaintVenandSimulation : Node
         _simulation = new Simulation(new Simulation.SimParams(
             NumCells, SubstepsMax, _dx, G, ManningN, BedSlope, MinDepth, Cfl
         ));
+        _simulation.InitialiseState(InitialDepth, InitialVelocity);
 
         _initialised = true;
     }
