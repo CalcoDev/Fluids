@@ -30,8 +30,21 @@ public class Simulation
         }
     }
 
+    public enum OutflowMode
+    {
+        OpenCopy,
+        FixedDepth
+    }
+
     // Configuration
     public SimParams Params;
+
+    // TODO(calco): Do we put these in params as well? Technically yes, butehhh
+    public bool InflowEnabled { get; set; } = false;
+    public float InflowQPerWidth { get; set; } = 0.0f;
+
+    public OutflowMode OutflowModeValue { get; set; } = OutflowMode.OpenCopy;
+    public float OutflowFixedDepth { get; set; } = 0.2f;
 
     public ReadOnlySpan<float> H => _h;
     public ReadOnlySpan<float> Q => _q;
@@ -255,18 +268,16 @@ public class Simulation
 
     private void GetLeftBoundaryState(out float h, out float q)
     {
-        // if (InflowEnabled)
-        // {
-        //     // Enforce inflow discharge, use depth from first cell
-        //     h = _h[0];
-        //     q = InflowQPerWidth;
-        // }
-        // else
-        // {
-        // Open boundary (zero gradient)
-        h = _h[0];
-        q = _q[0];
-        // }
+        if (InflowEnabled)
+        {
+            h = _h[0];
+            q = InflowQPerWidth;
+        }
+        else
+        {
+            h = _h[0];
+            q = _q[0];
+        }
     }
 
     private void GetRightBoundaryState(out float h, out float q)

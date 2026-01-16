@@ -37,6 +37,63 @@ public partial class SaintVenandSimulation : Node
     [Export(PropertyHint.Range, "0.1,0.9,0.01")]
     public float Cfl { get; set; } = 0.5f;
 
+    [ExportSubgroup("Inflow")]
+    [Export]
+    public bool InflowEnabled
+    {
+        get => _inflowEnabled;
+        set
+        {
+            _inflowEnabled = value;
+
+            if (_simulation != null)
+                _simulation.InflowEnabled = value;
+        }
+    }
+    private bool _inflowEnabled = false;
+
+    [Export]
+    public float InflowQPerWidth
+    {
+        get => _inflowQPerWidth;
+        set
+        {
+            _inflowQPerWidth = value;
+
+            if (_simulation != null)
+                _simulation.InflowQPerWidth = value;
+        }
+    }
+    private float _inflowQPerWidth;
+
+    [ExportSubgroup("Outflow")]
+    [Export]
+    public Simulation.OutflowMode OutflowModeValue
+    {
+        get => _outflowModeValue;
+        set
+        {
+            _outflowModeValue = value;
+
+            if (_simulation != null)
+                _simulation.OutflowModeValue = value;
+        }
+    }
+    private Simulation.OutflowMode _outflowModeValue = Simulation.OutflowMode.OpenCopy;
+
+    [Export]
+    public float OutflowFixedDepth
+    {
+        get => _outflowFixedDepth;
+        set
+        {
+            _outflowFixedDepth = value;
+
+            if (_simulation != null)
+                _simulation.OutflowFixedDepth = value;
+        }
+    }
+    private float _outflowFixedDepth = 0.2f;
 
     [ExportGroup("Initial Conditions")]
     [Export]
@@ -44,7 +101,6 @@ public partial class SaintVenandSimulation : Node
 
     [Export]
     public float InitialVelocity { get; set; } = 0.0f;
-
 
     [ExportGroup("Debug")]
     [Export]
@@ -142,6 +198,10 @@ public partial class SaintVenandSimulation : Node
         _simulation = new Simulation(new Simulation.SimParams(
             NumCells, SubstepsMax, _dx, G, ManningN, BedSlope, MinDepth, Cfl
         ));
+        _simulation.InflowEnabled = InflowEnabled;
+        _simulation.InflowQPerWidth = InflowQPerWidth;
+        _simulation.OutflowModeValue = OutflowModeValue;
+        _simulation.OutflowFixedDepth = OutflowFixedDepth;
         _simulation.InitialiseState(InitialDepth, InitialVelocity);
 
         _initialised = true;
