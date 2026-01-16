@@ -1,0 +1,51 @@
+[gd_scene load_steps=9 format=3 uid="uid://8jaq5xk1ogv6"]
+
+[ext_resource type="Script" uid="uid://bgn8rohkgril6" path="res://scripts/Managers/DebugTools.cs" id="1_b3kec"]
+[ext_resource type="Texture2D" uid="uid://djp4kbrnri2xu" path="res://assets/prototype/Green/texture_09.png" id="1_blt8y"]
+[ext_resource type="Texture2D" uid="uid://cd2hvv35sq8jq" path="res://assets/prototype/Orange/texture_09.png" id="2_b3kec"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_oyuvc"]
+albedo_texture = ExtResource("1_blt8y")
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l84n6"]
+albedo_texture = ExtResource("2_b3kec")
+uv1_triplanar = true
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ufqdn"]
+
+[sub_resource type="Sky" id="Sky_825k2"]
+sky_material = SubResource("ProceduralSkyMaterial_ufqdn")
+
+[sub_resource type="Environment" id="Environment_blt8y"]
+background_mode = 2
+sky = SubResource("Sky_825k2")
+
+[node name="LakeWorld" type="Node3D"]
+
+[node name="DebugTools" type="Node" parent="."]
+script = ExtResource("1_b3kec")
+
+[node name="CSGCombiner3D" type="CSGCombiner3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.43332, 0)
+operation = 2
+
+[node name="CSGBox3D" type="CSGBox3D" parent="CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.43332, 0)
+size = Vector3(36.42383, 7, 45.2666)
+material = SubResource("StandardMaterial3D_oyuvc")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+operation = 2
+size = Vector3(15.720703, 7, 20.085938)
+material = SubResource("StandardMaterial3D_l84n6")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.7034183, -0.32431844, 0.63247156, 0, 0.8898323, 0.45628774, -0.71077615, -0.32096115, 0.62592435, 7.430776, 5.3608294, 7.353854)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_blt8y")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.8580462, 0.37251854, -0.35353455, 0, 0.6883829, 0.72534746, 0.5135725, -0.6223816, 0.5906643, -7.688039, 15.773562, 12.844714)
