@@ -1,5 +1,6 @@
-[gd_scene load_steps=8 format=3 uid="uid://8jaq5xk1ogv6"]
+[gd_scene load_steps=9 format=3 uid="uid://8jaq5xk1ogv6"]
 
+[ext_resource type="Script" uid="uid://bcmpuhafa4udw" path="res://Scripts/Water/SaintVenand/SaintVenandSimulation.cs" id="1_b3kec"]
 [ext_resource type="Texture2D" uid="uid://djp4kbrnri2xu" path="res://assets/prototype/Green/texture_09.png" id="1_blt8y"]
 [ext_resource type="Texture2D" uid="uid://cd2hvv35sq8jq" path="res://assets/prototype/Orange/texture_09.png" id="2_b3kec"]
 
@@ -44,7 +45,10 @@ shadow_enabled = true
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(-0.6903003, 0.28731862, -0.6640283, 0, 0.9177708, 0.39711055, 0.723523, 0.27412552, -0.6335375, -16.403273, 7.6246257, -18.746548)
 
-[node name="Node" type="Node" parent="."]
+[node name="SaintVenandSimulation" type="Node" parent="." node_paths=PackedStringArray("Trench")]
+script = ExtResource("1_b3kec")
+Trench = NodePath("../Trench/Cutter")
+Direction = Vector3(0, 0, 1)
 
 [node name="Trench" type="CSGCombiner3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.43332, 0)
