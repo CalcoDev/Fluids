@@ -49,6 +49,8 @@ transform = Transform3D(-0.6903003, 0.28731862, -0.6640283, 0, 0.9177708, 0.3971
 script = ExtResource("1_b3kec")
 Trench = NodePath("../Trench/Cutter")
 Direction = Vector3(0, 0, 1)
+InflowEnabled = true
+InflowQPerWidth = 18.51
 
 [node name="Trench" type="CSGCombiner3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.43332, 0)

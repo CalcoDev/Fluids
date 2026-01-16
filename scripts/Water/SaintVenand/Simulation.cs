@@ -282,18 +282,18 @@ public class Simulation
 
     private void GetRightBoundaryState(out float h, out float q)
     {
-        // switch (OutflowModeValue)
-        // {
-        //     case OutflowMode.FixedDepth:
-        //         h = OutflowFixedDepth;
-        //         q = _q[NumCells - 1];
-        //         break;
-        //     case OutflowMode.OpenCopy:
-        //     default:
-        h = _h[Params.NumCells - 1];
-        q = _q[Params.NumCells - 1];
-        //         break;
-        // }
+        switch (OutflowModeValue)
+        {
+            case OutflowMode.FixedDepth:
+                h = OutflowFixedDepth;
+                q = _q[Params.NumCells - 1];
+                break;
+            case OutflowMode.OpenCopy:
+            default:
+                h = _h[Params.NumCells - 1];
+                q = _q[Params.NumCells - 1];
+                break;
+        }
     }
 
     private float ComputeFrictionSlope(float h, float u, float channelWidth)

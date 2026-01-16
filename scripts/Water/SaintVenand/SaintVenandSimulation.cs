@@ -95,7 +95,7 @@ public partial class SaintVenandSimulation : Node
     }
     private float _outflowFixedDepth = 0.2f;
 
-    [ExportGroup("Initial Conditions")]
+    [ExportSubgroup("Initial Conditions")]
     [Export]
     public float InitialDepth { get; set; } = 0.5f;
 

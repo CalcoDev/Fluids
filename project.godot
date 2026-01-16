@@ -22,6 +22,10 @@ config/icon="res://icon.svg"
 
 DebugTools="*res://scenes/managers/debug_tools.tscn"
 
+[debug_draw_3d]
+
+settings/addon_root_folder="res://addons/debug_draw_3d"
+
 [display]
 
 window/size/viewport_width=1280
@@ -34,6 +38,14 @@ window/vsync/vsync_mode=0
 [dotnet]
 
 project/assembly_name="Fluids"
+
+[editor]
+
+movie_writer/video_quality=1.0
+movie_writer/ogv/audio_quality=-0.1
+movie_writer/movie_file="C:/Users/calco/Documents/Calco/Dev/Game/Godot/fluids/screenshots/waves.avi"
+movie_writer/disable_vsync=true
+movie_writer/fps=240
 
 [input]
 
