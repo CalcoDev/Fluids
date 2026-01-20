@@ -30,7 +30,7 @@ public class CrossSectionSampler
         float maxRayDistance,
         int widthSamples = 32, int depthSamples = 16, float minDepth = 1e-4f)
     {
-        _world = world ?? throw new ArgumentNullException(nameof(world));
+        _world = world;
         _channelAxis = channelAxis.Normalized();
         _widthAxis = widthAxis.Normalized();
         _upAxis = upAxis.Normalized();

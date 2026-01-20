@@ -109,7 +109,7 @@ public class Simulation
     }
 
     // Simulation
-    public void Step(float delta, float channelWidth)
+    public void Step(float delta, World3D world, CrossSectionSampler crossSectionSampler, Vector3 originWorld, Vector3 channelAxis, float dx)
     {
         if (delta <= 0) return;
 
@@ -127,7 +127,7 @@ public class Simulation
         for (int s = 0; s < substeps; s++)
         {
             ComputeFluxes();
-            UpdateState(dt, channelWidth);
+            UpdateState(dt, world, crossSectionSampler, originWorld, channelAxis, dx);
         }
     }
 
@@ -162,23 +162,20 @@ public class Simulation
         {
             float hL, qL, hR, qR;
 
-            if (i == 0)
+            if (i == 0) // Left boundary (upstream)
             {
-                // Left boundary (upstream)
                 GetLeftBoundaryState(out hL, out qL);
                 hR = _h[0];
                 qR = _q[0];
             }
-            else if (i == Params.NumCells)
+            else if (i == Params.NumCells) // Right boundary (downstream)
             {
-                // Right boundary (downstream)
                 hL = _h[Params.NumCells - 1];
                 qL = _q[Params.NumCells - 1];
                 GetRightBoundaryState(out hR, out qR);
             }
-            else
+            else // Interior interface
             {
-                // Interior interface
                 hL = _h[i - 1];
                 qL = _q[i - 1];
                 hR = _h[i];
@@ -189,7 +186,9 @@ public class Simulation
         }
     }
 
-    private void UpdateState(float dt, float channelWidth)
+    private void UpdateState(float dt, World3D world,
+        CrossSectionSampler crossSectionSampler, Vector3 originWorld,
+        Vector3 channelAxis, float dx)
     {
         float dtDx = dt / Params.Dx;
 
@@ -206,15 +205,13 @@ public class Simulation
             if (h > Params.MinDepth)
             {
                 float u = _q[i] / h;
-                float sf = ComputeFrictionSlope(h, u, channelWidth);
+                float sf = ComputeFrictionSlope(i, h, u, world, crossSectionSampler, originWorld, channelAxis, dx);
                 sourceQ = dt * Params.G * h * (Params.BedSlope - sf);
             }
 
-            // Update
             _hNew[i] = _h[i] - dhFlux;
             _qNew[i] = _q[i] - dqFlux + sourceQ;
 
-            // Clamp
             _hNew[i] = MathF.Max(_hNew[i], 0.0f);
 
             // Dry cell handling
@@ -236,7 +233,6 @@ public class Simulation
             // }
         }
 
-        // Swap arrays
         (_h, _hNew) = (_hNew, _h);
         (_q, _qNew) = (_qNew, _q);
     }
@@ -296,27 +292,44 @@ public class Simulation
         }
     }
 
-    private float ComputeFrictionSlope(float h, float u, float channelWidth)
+    private float ComputeFrictionSlope(int cellIndex, float h, float u,
+        World3D world, CrossSectionSampler crossSectionSampler,
+        Vector3 originWorld, Vector3 channelAxis, float dx)
     {
         if (h < Params.MinDepth || MathF.Abs(Params.ManningN) < 1e-8f)
+        {
             return 0.0f;
+        }
 
-        // Rectangular channel hydraulics
-        // A = B * h
-        // P = B + 2*h
-        // R = A / P = B*h / (B + 2*h)
-        float B = channelWidth;
-        float area = B * h;
-        float wettedPerimeter = B + 2.0f * h;
-        float hydraulicRadius = area / wettedPerimeter;
+        float hydraulicRadius;
+        if (world != null && crossSectionSampler != null)
+        {
+            float cellCenterX = (cellIndex + 0.5f) * dx;
+            Vector3 cellCenterPos = originWorld + channelAxis * cellCenterX;
+
+            var props = crossSectionSampler.SampleCrossSection(cellCenterPos, h, 1.0f);
+            hydraulicRadius = props.HydraulicRadius;
+
+            // Fallback for invalid hydraulic radius
+            if (hydraulicRadius <= 0.0f)
+            {
+                hydraulicRadius = h / 3.0f;
+            }
+        }
+        else
+        {
+            // Fallback: assume rectangular channel
+            float B = 1.0f;
+            float area = B * h;
+            float wettedPerimeter = B + 2.0f * h;
+            hydraulicRadius = area / wettedPerimeter;
+        }
 
         // Manning friction slope: Sf = n² * u² / R^(4/3)
         // With sign to oppose flow
         float r43 = MathF.Pow(hydraulicRadius, 4.0f / 3.0f);
         if (r43 < 1e-8f) r43 = 1e-8f;
-
         float sf = Params.ManningN * Params.ManningN * u * MathF.Abs(u) / r43;
-
         return sf;
     }
 

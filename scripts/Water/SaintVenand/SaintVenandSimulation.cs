@@ -76,7 +76,9 @@ public partial class SaintVenandSimulation : Node
             _outflowModeValue = value;
 
             if (_simulation != null)
+            {
                 _simulation.OutflowModeValue = value;
+            }
         }
     }
     private Simulation.OutflowMode _outflowModeValue = Simulation.OutflowMode.OpenCopy;
@@ -90,7 +92,9 @@ public partial class SaintVenandSimulation : Node
             _outflowFixedDepth = value;
 
             if (_simulation != null)
+            {
                 _simulation.OutflowFixedDepth = value;
+            }
         }
     }
     private float _outflowFixedDepth = 0.2f;
@@ -115,7 +119,7 @@ public partial class SaintVenandSimulation : Node
     #endregion
 
 
-    #region Internal State - Geometry
+    #region Internal State
 
     private float _channelLength;
     private float _channelWidth;
@@ -125,6 +129,9 @@ public partial class SaintVenandSimulation : Node
     private Vector3 _widthDir;
     private Vector3 _upDir;
     private Vector3 _originWorld;
+
+    private CrossSectionSampler _crossSectionSampler;
+    private World3D _world;
 
     #endregion
 
@@ -144,7 +151,7 @@ public partial class SaintVenandSimulation : Node
     {
         base._Process(delta);
 
-        _simulation.Step((float)delta, _channelWidth);
+        _simulation.Step((float)delta, _world, _crossSectionSampler, _originWorld, _axisNormalized, _dx);
 
         if (DebugDraw)
         {
@@ -195,13 +202,41 @@ public partial class SaintVenandSimulation : Node
 
         ExtractChannelGeometry();
 
+        // Initialize world reference for raycasting
+        _world = Trench.GetWorld3D();
+        if (_world == null)
+        {
+            GD.PrintErr("Could not get World3D for raycasting");
+        }
+
+        // Initialize cross-section sampler
+        if (_world != null)
+        {
+            _crossSectionSampler = new CrossSectionSampler(
+                world: _world,
+                channelAxis: _axisNormalized,
+                widthAxis: _widthDir,
+                upAxis: _upDir,
+                maxRayDistance: _channelLength,
+                widthSamples: 32,
+                depthSamples: 1,
+                minDepth: MinDepth
+            );
+        }
+        else
+        {
+            GD.Print("Cross-section sampler disabled: could not get world");
+        }
+
         _simulation = new Simulation(new Simulation.SimParams(
             NumCells, SubstepsMax, _dx, G, ManningN, BedSlope, MinDepth, Cfl
-        ));
-        _simulation.InflowEnabled = InflowEnabled;
-        _simulation.InflowQPerWidth = InflowQPerWidth;
-        _simulation.OutflowModeValue = OutflowModeValue;
-        _simulation.OutflowFixedDepth = OutflowFixedDepth;
+        ))
+        {
+            InflowEnabled = InflowEnabled,
+            InflowQPerWidth = InflowQPerWidth,
+            OutflowModeValue = OutflowModeValue,
+            OutflowFixedDepth = OutflowFixedDepth
+        };
         _simulation.InitialiseState(InitialDepth, InitialVelocity);
 
         _initialised = true;
@@ -303,7 +338,6 @@ public partial class SaintVenandSimulation : Node
         _widthDir = widthLocalAxis.Normalized();
 
         // Compute bed Y (bottom of the trench)
-        // Bed is at the bottom of the box
         Vector3 trenchCenter = trenchTransform.Origin;
         _bedY = trenchCenter.Y - depthLocalSize * 0.5f;
 
@@ -320,9 +354,8 @@ public partial class SaintVenandSimulation : Node
 
     private void DrawDebug()
     {
-        // Draw water surface profile as a line path using DebugDraw3D
+        // Draw water surface profile
         var points = new Vector3[NumCells + 1];
-
         for (int k = 0; k <= NumCells; k++)
         {
             float x = k * _dx;
@@ -348,8 +381,6 @@ public partial class SaintVenandSimulation : Node
             points[k] = centerPos;
             points[k].Y = surfaceY;
         }
-
-        // Draw using DebugDraw3D if available
         DebugDraw3D.DrawLinePath(points, Colors.Cyan);
 
         // Draw bed line

@@ -49,8 +49,6 @@ transform = Transform3D(-0.6903003, 0.28731862, -0.6640283, 0, 0.9177708, 0.3971
 script = ExtResource("1_b3kec")
 Trench = NodePath("../Trench/Cutter")
 Direction = Vector3(0, 0, 1)
-InflowEnabled = true
-InflowQPerWidth = 18.51
 
 [node name="Trench" type="CSGCombiner3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.43332, 0)
@@ -62,7 +60,13 @@ size = Vector3(36.42383, 7, 45.2666)
 material = SubResource("StandardMaterial3D_oyuvc")
 
 [node name="Cutter" type="CSGBox3D" parent="Trench"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.030888, 0)
 operation = 2
 size = Vector3(15.720703, 7, 42.806396)
+material = SubResource("StandardMaterial3D_l84n6")
+
+[node name="Cutter2" type="CSGBox3D" parent="Trench"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.030888, 0)
+operation = 2
+size = Vector3(6, 3, 6)
 material = SubResource("StandardMaterial3D_l84n6")
