@@ -3,6 +3,12 @@ using System;
 
 namespace Fluids.Scripts.Wave;
 
+public enum ResetMode
+{
+    Zero,
+    BellCurve
+}
+
 public partial class WaveEquation1D : Node2D
 {
     [Export] private int PointCount { get; set; } = 500;
@@ -11,6 +17,7 @@ public partial class WaveEquation1D : Node2D
     [Export] private float LineLength { get; set; } = 500.0f;
     [Export] private Color LineColor { get; set; } = Colors.White;
     [Export] private float ImpulseStrength { get; set; } = 1.0f;
+    [Export] private ResetMode SpaceResetMode { get; set; } = ResetMode.BellCurve;
 
     private float[] _offsetsCurr;
     private float[] _offsets;
@@ -27,6 +34,13 @@ public partial class WaveEquation1D : Node2D
     public override void _Input(InputEvent @event)
     {
         base._Input(@event);
+
+        if (@event is InputEventKey keyEvent && keyEvent.Pressed && keyEvent.Keycode == Key.Space)
+        {
+            ResetSimulation();
+            GetTree().Root.SetInputAsHandled();
+            QueueRedraw();
+        }
 
         if (@event is InputEventMouseButton mouseButton)
         {
@@ -141,6 +155,28 @@ public partial class WaveEquation1D : Node2D
         Vector2 center = GlobalPosition;
         Vector2 mousePos = GetLocalMousePosition();
         DrawCircle(mousePos, _brushRadius, new Color(Colors.White, 0.2f));
+    }
+
+    private void ResetSimulation()
+    {
+        if (SpaceResetMode == ResetMode.Zero)
+        {
+            Array.Clear(_offsets, 0, _offsets.Length);
+            Array.Clear(_offsetsOld, 0, _offsetsOld.Length);
+        }
+        else if (SpaceResetMode == ResetMode.BellCurve)
+        {
+            float centerIdx = (PointCount - 1) / 2.0f;
+            float sigma = PointCount / 4.0f;
+            float amplitude = GetViewportRect().Size.Y / 4.0f;
+
+            for (int i = 0; i < PointCount; ++i)
+            {
+                float distFromCenter = i - centerIdx;
+                _offsets[i] = -amplitude * Mathf.Exp(-(distFromCenter * distFromCenter) / (2.0f * sigma * sigma));
+                _offsetsOld[i] = 0.0f;
+            }
+        }
     }
 
     // SIM STUFF
