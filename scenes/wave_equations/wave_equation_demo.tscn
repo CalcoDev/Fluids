@@ -17,8 +17,8 @@ ImpulseStrength = 4.0
 
 [node name="WaveEquation2D" type="Node2D" parent="."]
 script = ExtResource("2_j102c")
-Width = 512
-Height = 288
+Width = 256
+Height = 144
 WaveSpeed = 80.0
 SimulationStepCount = 4
 ClearColor = Color(0.09574694, 0.2385501, 0.26635438, 1)

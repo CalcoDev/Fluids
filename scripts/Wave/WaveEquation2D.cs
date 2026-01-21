@@ -96,18 +96,25 @@ public partial class WaveEquation2D : Node2D
         int centerX = (int)(normPos.X * Width);
         int centerY = (int)(normPos.Y * Height);
 
-        for (int y = 0; y < Height; ++y)
+        float radiusSq = BrushRadius * BrushRadius;
+        int minX = Mathf.Max(0, (int)(centerX - BrushRadius));
+        int maxX = Mathf.Min(Width - 1, (int)(centerX + BrushRadius));
+        int minY = Mathf.Max(0, (int)(centerY - BrushRadius));
+        int maxY = Mathf.Min(Height - 1, (int)(centerY + BrushRadius));
+
+        for (int y = minY; y <= maxY; ++y)
         {
-            for (int x = 0; x < Width; ++x)
+            for (int x = minX; x <= maxX; ++x)
             {
                 int dx = x - centerX;
                 int dy = y - centerY;
-                float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                float distSq = dx * dx + dy * dy;
 
-                if (dist < BrushRadius)
+                if (distSq < radiusSq)
                 {
-                    float influence = 1.0f - (dist / BrushRadius);
+                    float influence = 1.0f - (Mathf.Sqrt(distSq) / BrushRadius);
                     _offsets[x, y] -= ImpulseStrength * influence;
+                    _offsetsOld[x, y] -= ImpulseStrength * influence;
                 }
             }
         }
@@ -122,18 +129,25 @@ public partial class WaveEquation2D : Node2D
         int centerX = (int)(normPos.X * Width);
         int centerY = (int)(normPos.Y * Height);
 
-        for (int y = 0; y < Height; ++y)
+        float radiusSq = BrushRadius * BrushRadius;
+        int minX = Mathf.Max(0, (int)(centerX - BrushRadius));
+        int maxX = Mathf.Min(Width - 1, (int)(centerX + BrushRadius));
+        int minY = Mathf.Max(0, (int)(centerY - BrushRadius));
+        int maxY = Mathf.Min(Height - 1, (int)(centerY + BrushRadius));
+
+        for (int y = minY; y <= maxY; ++y)
         {
-            for (int x = 0; x < Width; ++x)
+            for (int x = minX; x <= maxX; ++x)
             {
                 int dx = x - centerX;
                 int dy = y - centerY;
-                float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                float distSq = dx * dx + dy * dy;
 
-                if (dist < BrushRadius)
+                if (distSq < radiusSq)
                 {
-                    float influence = 1.0f - (dist / BrushRadius);
+                    float influence = 1.0f - (Mathf.Sqrt(distSq) / BrushRadius);
                     _offsets[x, y] += ImpulseStrength * influence;
+                    _offsetsOld[x, y] += ImpulseStrength * influence;
                 }
             }
         }
@@ -338,14 +352,10 @@ public partial class WaveEquation2D : Node2D
             }
         }
 
-        for (int y = 0; y < Height; ++y)
-        {
-            for (int x = 0; x < Width; ++x)
-            {
-                _offsetsOld[x, y] = _offsets[x, y];
-                _offsets[x, y] = _offsetsCurr[x, y];
-            }
-        }
+        var tmp = _offsetsOld;
+        _offsetsOld = _offsets;
+        _offsets = _offsetsCurr;
+        _offsetsCurr = tmp;
     }
 
     private float GetWrappedValue(int x, int y)
