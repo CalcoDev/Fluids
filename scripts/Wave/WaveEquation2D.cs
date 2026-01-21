@@ -31,6 +31,7 @@ public partial class WaveEquation2D : Node2D
     private bool _wasVisible = true;
     private bool _leftMousePressed = false;
     private bool _rightMousePressed = false;
+    private byte[] _rgba;
 
     public override void _Input(InputEvent @event)
     {
@@ -215,14 +216,15 @@ public partial class WaveEquation2D : Node2D
             AddChild(_textureRect);
         }
 
-        _image = Image.CreateEmpty(Width, Height, false, Image.Format.Rgb8);
+        _image = Image.CreateEmpty(Width, Height, false, Image.Format.Rgba8);
         _imageTexture = ImageTexture.CreateFromImage(_image);
         _textureRect.Texture = _imageTexture;
+        _rgba = new byte[Width * Height * 4];
     }
 
     private void UpdateTextureDisplay()
     {
-        if (_image == null || _offsets == null)
+        if (_image == null || _offsets == null || _rgba == null)
             return;
 
         float maxVal = 0.0f;
@@ -237,11 +239,16 @@ public partial class WaveEquation2D : Node2D
         if (maxVal < 0.001f)
             maxVal = 1.0f;
 
-        for (int y = 0; y < Height; ++y)
+        float invMax = 1.0f / maxVal;
+
+        System.Threading.Tasks.Parallel.For(0, Height, y =>
         {
+            int rowStart = y * Width * 4;
+            int idx = rowStart;
+
             for (int x = 0; x < Width; ++x)
             {
-                float normalized = _offsets[x, y] / maxVal;
+                float normalized = _offsets[x, y] * invMax;
                 normalized = Mathf.Clamp(normalized, -1.0f, 1.0f);
 
                 Color col;
@@ -258,10 +265,14 @@ public partial class WaveEquation2D : Node2D
                     col = ClearColor;
                 }
 
-                _image.SetPixel(x, y, col);
+                _rgba[idx++] = (byte)(col.R * 255f);
+                _rgba[idx++] = (byte)(col.G * 255f);
+                _rgba[idx++] = (byte)(col.B * 255f);
+                _rgba[idx++] = 255;
             }
-        }
+        });
 
+        _image.SetData(Width, Height, false, _image.GetFormat(), _rgba);
         _imageTexture.Update(_image);
     }
 
