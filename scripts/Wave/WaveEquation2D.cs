@@ -320,36 +320,13 @@ public partial class WaveEquation2D : Node2D
         lambda = Mathf.Min(lambda, MaxCFL);
         lambda2 = lambda * lambda;
 
-
-        for (int y = 0; y < Height; ++y)
+        if (WrapAround)
         {
-            for (int x = 0; x < Width; ++x)
-            {
-                float left = GetWrappedValue(x - 1, y);
-                float right = GetWrappedValue(x + 1, y);
-                float up = GetWrappedValue(x, y - 1);
-                float down = GetWrappedValue(x, y + 1);
-                float center = _offsets[x, y];
-
-                float lap = left + right + up + down - 4.0f * center;
-
-                float inertia = 2.0f * center - _offsetsOld[x, y];
-                _offsetsCurr[x, y] = inertia + lambda2 * lap;
-            }
+            SimStepWraparound(lambda2);
         }
-
-        if (!WrapAround)
+        else
         {
-            for (int x = 0; x < Width; ++x)
-            {
-                _offsetsCurr[x, 0] = 0.0f;
-                _offsetsCurr[x, Height - 1] = 0.0f;
-            }
-            for (int y = 0; y < Height; ++y)
-            {
-                _offsetsCurr[0, y] = 0.0f;
-                _offsetsCurr[Width - 1, y] = 0.0f;
-            }
+            SimStepFixed(lambda2);
         }
 
         var tmp = _offsetsOld;
@@ -358,19 +335,57 @@ public partial class WaveEquation2D : Node2D
         _offsetsCurr = tmp;
     }
 
-    private float GetWrappedValue(int x, int y)
+    private void SimStepFixed(float lambda2)
     {
-        if (WrapAround)
+        System.Threading.Tasks.Parallel.For(1, Height - 1, y =>
         {
-            x = ((x % Width) + Width) % Width;
-            y = ((y % Height) + Height) % Height;
-            return _offsets[x, y];
-        }
-        else
+            for (int x = 1; x < Width - 1; ++x)
+            {
+                float left = _offsets[x - 1, y];
+                float right = _offsets[x + 1, y];
+                float up = _offsets[x, y - 1];
+                float down = _offsets[x, y + 1];
+                float center = _offsets[x, y];
+
+                float lap = left + right + up + down - 4.0f * center;
+                float inertia = 2.0f * center - _offsetsOld[x, y];
+                _offsetsCurr[x, y] = inertia + lambda2 * lap;
+            }
+        });
+
+        for (int x = 0; x < Width; ++x)
         {
-            if (x < 0 || x >= Width || y < 0 || y >= Height)
-                return 0.0f;
-            return _offsets[x, y];
+            _offsetsCurr[x, 0] = 0.0f;
+            _offsetsCurr[x, Height - 1] = 0.0f;
         }
+        for (int y = 1; y < Height - 1; ++y)
+        {
+            _offsetsCurr[0, y] = 0.0f;
+            _offsetsCurr[Width - 1, y] = 0.0f;
+        }
+    }
+
+    private void SimStepWraparound(float lambda2)
+    {
+        System.Threading.Tasks.Parallel.For(0, Height, y =>
+        {
+            for (int x = 0; x < Width; ++x)
+            {
+                int xLeft = x == 0 ? Width - 1 : x - 1;
+                int xRight = x == Width - 1 ? 0 : x + 1;
+                int yUp = y == 0 ? Height - 1 : y - 1;
+                int yDown = y == Height - 1 ? 0 : y + 1;
+
+                float left = _offsets[xLeft, y];
+                float right = _offsets[xRight, y];
+                float up = _offsets[x, yUp];
+                float down = _offsets[x, yDown];
+                float center = _offsets[x, y];
+
+                float lap = left + right + up + down - 4.0f * center;
+                float inertia = 2.0f * center - _offsetsOld[x, y];
+                _offsetsCurr[x, y] = inertia + lambda2 * lap;
+            }
+        });
     }
 }
