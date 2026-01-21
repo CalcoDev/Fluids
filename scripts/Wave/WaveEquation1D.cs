@@ -18,6 +18,8 @@ public partial class WaveEquation1D : Node2D
     [Export] private Color LineColor { get; set; } = Colors.White;
     [Export] private float ImpulseStrength { get; set; } = 1.0f;
     [Export] private ResetMode SpaceResetMode { get; set; } = ResetMode.BellCurve;
+    [Export] private float MaxCFL { get; set; } = 1.0f;
+    [Export] private int SimulationStepCount { get; set; } = 1;
 
     private float[] _offsetsCurr;
     private float[] _offsets;
@@ -25,6 +27,7 @@ public partial class WaveEquation1D : Node2D
     private float _brushRadius = 20.0f;
     private Vector2 _lastMousePos = Vector2.Zero;
     private float _lastDeltaTime = 0.0f;
+    private bool _wasVisible = true;
 
     public override void _EnterTree()
     {
@@ -137,8 +140,23 @@ public partial class WaveEquation1D : Node2D
     {
         base._Process(delta);
 
+        if (!Visible)
+        {
+            _wasVisible = false;
+            return;
+        }
+
+        if (!_wasVisible)
+        {
+            ResetSimulation();
+            _wasVisible = true;
+        }
+
         _lastDeltaTime = (float)delta;
-        SimStep((float)delta);
+        for (int step = 0; step < SimulationStepCount; ++step)
+        {
+            SimStep((float)delta / SimulationStepCount);
+        }
         QueueRedraw();
     }
 
@@ -193,10 +211,13 @@ public partial class WaveEquation1D : Node2D
         float lambda = WaveSpeed * deltaTime / dx;
         float lambda2 = lambda * lambda;
 
-        if (lambda > 1.0f)
+        if (lambda > MaxCFL)
         {
-            GD.Print($"Unstable CFL: lambda={lambda}");
+            GD.Print($"Clamped CFL: lambda={lambda} to MaxCFL={MaxCFL}");
         }
+
+        lambda = Mathf.Min(lambda, MaxCFL);
+        lambda2 = lambda * lambda;
 
         for (int i = 0; i < PointCount; ++i)
         {
