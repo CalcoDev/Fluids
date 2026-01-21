@@ -14,6 +14,11 @@ public partial class WaveEquation2D : Node2D
     [Export] private float BrushRadius { get; set; } = 20.0f;
     [Export] private ResetMode SpaceResetMode { get; set; } = ResetMode.BellCurve;
     [Export] private int SimulationStepCount { get; set; } = 1;
+    [Export] private Color ClearColor { get; set; } = Colors.Black;
+    [Export] private Color PositiveColor { get; set; } = Colors.Red;
+    [Export] private Color NegativeColor { get; set; } = Colors.Cyan;
+    [Export] private Color BrushPreviewColor { get; set; } = Colors.White;
+    [Export] private float BrushPreviewThickness { get; set; } = 1.0f;
 
     private float[,] _offsetsCurr;
     private float[,] _offsets;
@@ -24,6 +29,8 @@ public partial class WaveEquation2D : Node2D
     private Image _image;
     private ImageTexture _imageTexture;
     private bool _wasVisible = true;
+    private bool _leftMousePressed = false;
+    private bool _rightMousePressed = false;
 
     public override void _Input(InputEvent @event)
     {
@@ -48,20 +55,30 @@ public partial class WaveEquation2D : Node2D
                 BrushRadius = Mathf.Max(1.0f, BrushRadius - 2.0f);
                 QueueRedraw();
             }
+            else if (mouseButton.ButtonIndex == MouseButton.Left)
+            {
+                _leftMousePressed = mouseButton.Pressed;
+                GetTree().Root.SetInputAsHandled();
+            }
+            else if (mouseButton.ButtonIndex == MouseButton.Right)
+            {
+                _rightMousePressed = mouseButton.Pressed;
+                GetTree().Root.SetInputAsHandled();
+            }
         }
 
         if (@event is InputEventMouseMotion mouseMotion)
         {
             Vector2 mousePos = mouseMotion.Position;
 
-            if (Input.IsMouseButtonPressed(MouseButton.Right))
+            if (_leftMousePressed)
             {
-                HandleRightClickDrag(mousePos);
+                HandleLeftClick(mousePos);
                 GetTree().Root.SetInputAsHandled();
             }
-            else if (Input.IsMouseButtonPressed(MouseButton.Left))
+            else if (_rightMousePressed)
             {
-                HandleLeftClickDrag(mousePos);
+                HandleRightClick(mousePos);
                 GetTree().Root.SetInputAsHandled();
             }
 
@@ -70,10 +87,10 @@ public partial class WaveEquation2D : Node2D
         }
     }
 
-    private void HandleRightClickDrag(Vector2 mousePos)
+    private void HandleRightClick(Vector2 mousePos)
     {
         Vector2 gridSize = GetGridDimensions();
-        Vector2 localPos = GetLocalMousePosition();
+        Vector2 localPos = mousePos - GlobalPosition;
         Vector2 normPos = localPos / gridSize;
 
         int centerX = (int)(normPos.X * Width);
@@ -90,19 +107,16 @@ public partial class WaveEquation2D : Node2D
                 if (dist < BrushRadius)
                 {
                     float influence = 1.0f - (dist / BrushRadius);
-                    _offsets[x, y] = normPos.Y * influence + _offsets[x, y] * (1.0f - influence);
+                    _offsets[x, y] -= ImpulseStrength * influence;
                 }
             }
         }
     }
 
-    private void HandleLeftClickDrag(Vector2 mousePos)
+    private void HandleLeftClick(Vector2 mousePos)
     {
         Vector2 gridSize = GetGridDimensions();
-        Vector2 localPos = GetLocalMousePosition();
-        Vector2 lastLocalPos = _lastMousePos - GlobalPosition;
-        Vector2 mouseVelocity = localPos - lastLocalPos;
-
+        Vector2 localPos = mousePos - GlobalPosition;
         Vector2 normPos = localPos / gridSize;
 
         int centerX = (int)(normPos.X * Width);
@@ -119,8 +133,7 @@ public partial class WaveEquation2D : Node2D
                 if (dist < BrushRadius)
                 {
                     float influence = 1.0f - (dist / BrushRadius);
-                    float velocityMagnitude = mouseVelocity.Length() * influence * ImpulseStrength * _lastDeltaTime;
-                    _offsets[x, y] += velocityMagnitude;
+                    _offsets[x, y] += ImpulseStrength * influence;
                 }
             }
         }
@@ -168,7 +181,8 @@ public partial class WaveEquation2D : Node2D
     private void DrawBrushPreview()
     {
         Vector2 mousePos = GetLocalMousePosition();
-        DrawCircle(mousePos, BrushRadius, new Color(Colors.White, 0.2f));
+        DrawCircle(mousePos, BrushRadius, new Color(BrushPreviewColor, 0.2f));
+        DrawCircle(mousePos, BrushRadius, BrushPreviewColor, false, BrushPreviewThickness);
     }
 
     private Vector2 GetGridDimensions()
@@ -217,13 +231,17 @@ public partial class WaveEquation2D : Node2D
                 normalized = Mathf.Clamp(normalized, -1.0f, 1.0f);
 
                 Color col;
-                if (normalized > 0)
+                if (normalized > 0.001f)
                 {
-                    col = Color.FromHsv(0.0f, normalized, 1.0f);
+                    col = ClearColor.Lerp(PositiveColor, normalized);
+                }
+                else if (normalized < -0.001f)
+                {
+                    col = ClearColor.Lerp(NegativeColor, -normalized);
                 }
                 else
                 {
-                    col = Color.FromHsv(0.66f, -normalized, 1.0f);
+                    col = ClearColor;
                 }
 
                 _image.SetPixel(x, y, col);
