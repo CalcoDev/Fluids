@@ -162,19 +162,19 @@ public partial class WaveEquation1D : Node2D
         if (SpaceResetMode == ResetMode.Zero)
         {
             Array.Clear(_offsets, 0, _offsets.Length);
-            Array.Clear(_offsetsOld, 0, _offsetsOld.Length);
+            Array.Copy(_offsets, _offsetsOld, _offsets.Length);
         }
         else if (SpaceResetMode == ResetMode.BellCurve)
         {
             float centerIdx = (PointCount - 1) / 2.0f;
             float sigma = PointCount / 4.0f;
-            float amplitude = GetViewportRect().Size.Y / 4.0f;
+            float amplitude = GetViewportRect().Size.Y / 2.0f;
 
             for (int i = 0; i < PointCount; ++i)
             {
-                float distFromCenter = i - centerIdx;
-                _offsets[i] = -amplitude * Mathf.Exp(-(distFromCenter * distFromCenter) / (2.0f * sigma * sigma));
-                _offsetsOld[i] = 0.0f;
+                float distFromCenter = MathF.Pow(i - centerIdx, 3.0f);
+                _offsets[i] = -amplitude * Mathf.Exp(-MathF.Abs(distFromCenter) / (2.0f * sigma * sigma));
+                _offsetsOld[i] = _offsets[i];
             }
         }
     }
@@ -189,17 +189,29 @@ public partial class WaveEquation1D : Node2D
 
     public void SimStep(float deltaTime)
     {
-        float incr = LineLength / PointCount;
+        float dx = LineLength / PointCount;
+        float lambda = WaveSpeed * deltaTime / dx;
+        float lambda2 = lambda * lambda;
 
-        float cfl = WaveSpeed * deltaTime / incr;
+        if (lambda > 1.0f)
+        {
+            GD.Print($"Unstable CFL: lambda={lambda}");
+        }
+
         for (int i = 0; i < PointCount; ++i)
         {
             float prev = (!WrapAround && i == 0) ? 0.0f : _offsets[(i - 1 + PointCount) % PointCount];
             float next = (!WrapAround && i == PointCount - 1) ? 0.0f : _offsets[(i + 1) % PointCount];
 
-            float inertiaForce = 2.0f * _offsets[i] - _offsetsOld[i];
-            float elasticForce = cfl * (prev - 2 * _offsets[i] + next);
-            _offsetsCurr[i] = inertiaForce + elasticForce;
+            float inertia = 2.0f * _offsets[i] - _offsetsOld[i];
+            float lap = prev - 2.0f * _offsets[i] + next;
+            _offsetsCurr[i] = inertia + lambda2 * lap;
+        }
+
+        if (!WrapAround)
+        {
+            _offsetsCurr[0] = 0.0f;
+            _offsetsCurr[PointCount - 1] = 0.0f;
         }
 
         Array.Copy(_offsets, _offsetsOld, _offsets.Length);
