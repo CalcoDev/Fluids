@@ -25,6 +25,12 @@ public class CrossSectionSampler
     private readonly int _depthSamples;
     private readonly float _minDepth;
 
+    // Performance optimization: caching
+    private Dictionary<int, CrossSectionProperties> _sectionCache;
+    private Dictionary<int, float> _bedElevationCache;
+    private float _lastCachedWaterDepth = -1f;
+    private const float DEPTH_CHANGE_THRESHOLD = 0.001f;  // Invalidate cache if depth changes by more than this
+
     public CrossSectionSampler(World3D world,
         Vector3 channelAxis, Vector3 widthAxis, Vector3 upAxis,
         float maxRayDistance,
@@ -38,6 +44,10 @@ public class CrossSectionSampler
         _widthSamples = Math.Max(2, widthSamples);
         _depthSamples = Math.Max(2, depthSamples);
         _minDepth = minDepth;
+
+        // Initialize caches
+        _sectionCache = new Dictionary<int, CrossSectionProperties>();
+        _bedElevationCache = new Dictionary<int, float>();
     }
 
     public CrossSectionProperties SampleCrossSection(
@@ -57,16 +67,38 @@ public class CrossSectionSampler
             };
         }
 
-        float bedElevation = FindBedElevation(centerPosition);
+        // Generate cache key from position
+        int posKey = GetPositionKey(centerPosition);
+
+        // Check if we should invalidate cache due to depth change
+        if (Math.Abs(waterDepth - _lastCachedWaterDepth) > DEPTH_CHANGE_THRESHOLD)
+        {
+            _sectionCache.Clear();
+            _lastCachedWaterDepth = waterDepth;
+        }
+
+        // Check cache
+        if (_sectionCache.TryGetValue(posKey, out var cached))
+        {
+            return cached;
+        }
+
+        // Not in cache - compute it
+        float bedElevation = FindBedElevationCached(centerPosition);
 
         var crossSectionPoints = new List<Vector2>();
-        for (int d = 0; d < _depthSamples; d++)
+
+        // OPTIMIZATION: Use only 4 depth samples and 8 width samples
+        int depthSamplesToUse = 4;
+        int widthSamplesToUse = 8;
+
+        for (int d = 0; d < depthSamplesToUse; d++)
         {
-            float depthFraction = (float)d / (_depthSamples - 1);
+            float depthFraction = (float)d / (depthSamplesToUse - 1);
             float currentElevation = bedElevation + waterDepth * depthFraction;
 
             // Sample width at this depth
-            var widthPoints = SampleWidthAtDepth(centerPosition, currentElevation, channelWidth);
+            var widthPoints = SampleWidthAtDepth(centerPosition, currentElevation, channelWidth, widthSamplesToUse);
 
             foreach (var point in widthPoints)
             {
@@ -74,7 +106,35 @@ public class CrossSectionSampler
             }
         }
 
-        return CalculateProperties(crossSectionPoints, bedElevation, channelWidth);
+        var result = CalculateProperties(crossSectionPoints, bedElevation, channelWidth);
+
+        // Cache the result
+        _sectionCache[posKey] = result;
+
+        return result;
+    }
+
+    private int GetPositionKey(Vector3 position)
+    {
+        // Quantize position to reduce cache misses from slightly different positions
+        const float QUANTIZE = 1.0f;
+        int x = (int)(position.X / QUANTIZE);
+        int z = (int)(position.Z / QUANTIZE);
+        return x * 73856093 ^ z * 19349663;
+    }
+
+    private float FindBedElevationCached(Vector3 position)
+    {
+        int posKey = GetPositionKey(position);
+
+        if (_bedElevationCache.TryGetValue(posKey, out var cached))
+        {
+            return cached;
+        }
+
+        float bedElev = FindBedElevation(position);
+        _bedElevationCache[posKey] = bedElev;
+        return bedElev;
     }
 
     private float FindBedElevation(Vector3 position)
@@ -105,22 +165,22 @@ public class CrossSectionSampler
         return position.Y;
     }
 
-    private List<Vector2> SampleWidthAtDepth(Vector3 centerPosition, float elevation, float channelWidth)
+    private List<Vector2> SampleWidthAtDepth(Vector3 centerPosition, float elevation, float channelWidth, int widthSamplesToUse)
     {
         var points = new List<Vector2>();
 
         // Fallback to assumption of rectangular bed
         if (_world?.DirectSpaceState == null)
         {
-            return EstimateWidthAtDepth(channelWidth);
+            return EstimateWidthAtDepth(channelWidth, widthSamplesToUse);
         }
 
         float maxWidth = channelWidth * 1.5f;
 
-        // Find channel boudnaries
-        for (int i = 0; i < _widthSamples; i++)
+        // Find channel boundaries - use reduced sample count
+        for (int i = 0; i < widthSamplesToUse; i++)
         {
-            float widthFraction = (i / (float)(_widthSamples - 1)) - 0.5f;
+            float widthFraction = (i / (float)(widthSamplesToUse - 1)) - 0.5f;
             float rayOffset = widthFraction * maxWidth;
 
             Vector3 rayStart = centerPosition + _widthAxis * rayOffset;
@@ -151,21 +211,20 @@ public class CrossSectionSampler
         // Fallback to assumption of rectangular bed
         if (points.Count < 2)
         {
-            points = EstimateWidthAtDepth(channelWidth);
+            points = EstimateWidthAtDepth(channelWidth, widthSamplesToUse);
         }
 
         return points;
     }
 
-    private List<Vector2> EstimateWidthAtDepth(float channelWidth)
+    private List<Vector2> EstimateWidthAtDepth(float channelWidth, int widthSamplesToUse)
     {
         var points = new List<Vector2>();
 
-        // Sample across the channel width assuming rectangular or simple trapezoidal shape
-        // Assume channel sides are vertical
-        for (int i = 0; i < _widthSamples; i++)
+        // Sample across the channel width assuming rectangular shape
+        for (int i = 0; i < widthSamplesToUse; i++)
         {
-            float widthFraction = (i / (float)(_widthSamples - 1)) - 0.5f;  // -0.5 to 0.5
+            float widthFraction = (i / (float)(widthSamplesToUse - 1)) - 0.5f;
             float rayOffset = widthFraction * channelWidth;
             float depthFromSurface = 0.0f;
             points.Add(new Vector2(rayOffset, depthFromSurface));

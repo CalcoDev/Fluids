@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://2evx2hp4svl2"]
+
+[ext_resource type="Script" uid="uid://pj8w6jwx0sim" path="res://Scripts/Wave/WaveEquation1D.cs" id="1_jjmko"]
+
+[node name="WaveEquationDemo" type="Node2D"]
+
+[node name="WaveEquation1D" type="Node2D" parent="."]
+position = Vector2(640, 320)
+script = ExtResource("1_jjmko")
+PointCount = 1280
+WaveSpeed = 20.0
+WrapAround = true
+LineLength = 1280.0
+ImpulseStrength = 4.0
