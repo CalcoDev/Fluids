@@ -1,12 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://2evx2hp4svl2"]
+[gd_scene load_steps=2 format=3 uid="uid://2evx2hp4svl2"]
 
 [ext_resource type="Script" uid="uid://pj8w6jwx0sim" path="res://Scripts/Wave/WaveEquation1D.cs" id="1_jjmko"]
-[ext_resource type="Script" uid="uid://du533gkgyubvw" path="res://Scripts/Wave/WaveEquation2D.cs" id="2_j102c"]
 
 [node name="WaveEquationDemo" type="Node2D"]
 
 [node name="WaveEquation1D" type="Node2D" parent="."]
-visible = false
 position = Vector2(640, 320)
 script = ExtResource("1_jjmko")
 PointCount = 1280
@@ -14,19 +12,3 @@ WaveSpeed = 239.0
 WrapAround = true
 LineLength = 1280.0
 ImpulseStrength = 4.0
-
-[node name="WaveEquation2D" type="Node2D" parent="."]
-script = ExtResource("2_j102c")
-Width = 1280
-Height = 720
-WaveSpeed = 60.0
-SimulationStepCount = 8
-ClearColor = Color(0.09574694, 0.2385501, 0.26635438, 1)
-PositiveColor = Color(1, 0.4852363, 0.3980633, 1)
-NegativeColor = Color(0.09684936, 0.042317137, 0.13127252, 1)
-BrushPreviewColor = Color(0.56940794, 0.48677072, 0.45289236, 0.268)
-
-[node name="TextureRect" type="TextureRect" parent="WaveEquation2D"]
-z_index = -1
-offset_right = 1280.0
-offset_bottom = 720.0

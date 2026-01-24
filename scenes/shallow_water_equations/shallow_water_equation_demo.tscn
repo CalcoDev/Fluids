@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://cfi57rvinrndm"]
+
+[ext_resource type="Script" uid="uid://77js7f8dbtf4" path="res://Scripts/Water/ShallowWater/ShallowWaterEquationDemoTexture.cs" id="1_8c2ju"]
+
+[node name="ShallowWaterEquationDemo" type="Node2D"]
+
+[node name="TextureDemo" type="Node2D" parent="."]
+script = ExtResource("1_8c2ju")

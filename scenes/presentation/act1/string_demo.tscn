@@ -1,0 +1,24 @@
+[gd_scene load_steps=2 format=3 uid="uid://de06n1ob4mai1"]
+
+[ext_resource type="Script" uid="uid://crnpirm242qcc" path="res://Scripts/Presentation/Act1/StringDemo.cs" id="1_xk2hh"]
+
+[node name="StringDemo" type="Node2D"]
+
+[node name="Node2D" type="Node2D" parent="." node_paths=PackedStringArray("StringLeft", "StringRight")]
+z_index = 1
+script = ExtResource("1_xk2hh")
+StringLeft = NodePath("../StringLeft")
+StringRight = NodePath("../StringRight")
+StringSegmentCount = 50
+StringSegmentLineWidth = 5.0
+StringColorA = Color(1, 1, 1, 1)
+StringColorB = Color(0.7009295, 0.7009295, 0.7009295, 1)
+DoSimulateGravity = true
+GravityAcceleration = 300.0
+ConstraintIterations = 18
+
+[node name="StringLeft" type="Marker2D" parent="."]
+position = Vector2(252, 360)
+
+[node name="StringRight" type="Marker2D" parent="."]
+position = Vector2(1028, 360)
