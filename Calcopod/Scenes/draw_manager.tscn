@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://bhxdigju1fywh"]
+
+[node name="DrawManager" type="Node2D"]
