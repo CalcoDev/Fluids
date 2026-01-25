@@ -76,36 +76,29 @@ public partial class StringDemo : Node2D
         Vector2 endPos = StringRight.Position;
         float segmentWidth = (endPos.X - startPos.X) / StringSegmentCount;
 
-        // Iteratively enforce distance constraints
         for (int iter = 0; iter < ConstraintIterations; iter++)
         {
             for (int i = 0; i < StringSegmentCount - 1; i++)
             {
-                // Calculate actual positions
                 Vector2 p1 = new Vector2(startPos.X + i * segmentWidth, startPos.Y + _heights[i]);
                 Vector2 p2 = new Vector2(startPos.X + (i + 1) * segmentWidth, startPos.Y + _heights[i + 1]);
 
-                // Calculate distance between segments
                 Vector2 delta = p2 - p1;
                 float currentDistance = delta.Length();
 
                 if (currentDistance < 0.001f)
                     continue;
 
-                // Calculate how much we need to correct
                 float difference = currentDistance - _segmentRestLength;
                 float correctionPercent = difference / currentDistance;
 
-                // Apply corrections to both points, splitting the correction
                 Vector2 correction = delta * correctionPercent;
 
-                // Determine if points can move
-                bool canMoveP1 = i > 0; // First point is fixed
-                bool canMoveP2 = i < StringSegmentCount - 2; // Last point is fixed
+                bool canMoveP1 = i > 0;
+                bool canMoveP2 = i < StringSegmentCount - 2;
 
                 if (canMoveP1 && canMoveP2)
                 {
-                    // Both can move - split correction 50/50
                     float halfCorrectionY = correction.Y * 0.5f;
                     _heights[i] += halfCorrectionY;
                     _heights[i + 1] -= halfCorrectionY;
@@ -116,13 +109,11 @@ public partial class StringDemo : Node2D
                 }
                 else if (canMoveP2)
                 {
-                    // Only p2 can move (first segment)
                     _heights[i + 1] -= correction.Y;
                     _velocities[i + 1] -= _velocities[i + 1] * Mathf.Abs(correction.Y) * 0.5f;
                 }
                 else if (canMoveP1)
                 {
-                    // Only p1 can move (last segment)
                     _heights[i] += correction.Y;
                     _velocities[i] -= _velocities[i] * Mathf.Abs(correction.Y) * 0.5f;
                 }
