@@ -13,14 +13,9 @@ config_version=5
 config/name="Fluids"
 config/description="Fluids simulation stuff."
 config/version="1.0.0"
-run/main_scene="uid://8jaq5xk1ogv6"
 config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 run/max_fps=240
 config/icon="res://icon.svg"
-
-[autoload]
-
-DebugTools="*res://scenes/managers/debug_tools.tscn"
 
 [debug_draw_3d]
 
