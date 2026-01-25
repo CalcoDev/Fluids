@@ -113,12 +113,22 @@ public partial class DebugDrawComponent : Node
 
     #region Surfaces
 
-    private WorldSurface? _worldSurface;
-    private ScreenSurface? _screenSurface;
-    private CanvasLayer? _screenCanvasLayer;
+    /// <summary>
+    /// World surface node for rendering world-space debug commands.
+    /// If left null, one will be auto-created.
+    /// </summary>
+    [ExportGroup("Surfaces")]
+    [Export]
+    public WorldSurface? WorldSurface { get; set; }
 
-    public WorldSurface? WorldSurface => _worldSurface;
-    public ScreenSurface? ScreenSurface => _screenSurface;
+    /// <summary>
+    /// Screen surface node for rendering screen-space debug commands.
+    /// If left null, one will be auto-created.
+    /// </summary>
+    [Export]
+    public ScreenSurface? ScreenSurface { get; set; }
+
+    private CanvasLayer? _screenCanvasLayer;
 
     #endregion
 
@@ -158,8 +168,8 @@ public partial class DebugDrawComponent : Node
         UpdateTimedCommands(_timedCommandsScreen, deltaF);
 
         // Queue redraw on surfaces
-        _worldSurface?.QueueRedraw();
-        _screenSurface?.QueueRedraw();
+        WorldSurface?.QueueRedraw();
+        ScreenSurface?.QueueRedraw();
 
         // Clear frame commands at end of frame
         _frameCommandsWorld.Clear();
@@ -180,19 +190,20 @@ public partial class DebugDrawComponent : Node
 
     private void EnsureSurfacesExist()
     {
-        // Create world surface if missing
-        if (_worldSurface == null || !IsInstanceValid(_worldSurface))
+        // Create or use provided world surface
+        if (WorldSurface == null || !IsInstanceValid(WorldSurface))
         {
-            _worldSurface = GetNodeOrNull<WorldSurface>("WorldSurface");
-            if (_worldSurface == null)
+            var foundSurface = GetNodeOrNull<WorldSurface>("WorldSurface");
+            if (foundSurface == null)
             {
-                _worldSurface = new WorldSurface { Name = "WorldSurface" };
-                AddChild(_worldSurface);
+                foundSurface = new WorldSurface { Name = "WorldSurface" };
+                AddChild(foundSurface);
             }
-            _worldSurface.Initialize(this);
+            WorldSurface = foundSurface;
         }
+        WorldSurface.Initialize(this);
 
-        // Create screen canvas layer and surface if missing
+        // Create or use provided screen canvas layer
         if (_screenCanvasLayer == null || !IsInstanceValid(_screenCanvasLayer))
         {
             _screenCanvasLayer = GetNodeOrNull<CanvasLayer>("ScreenCanvasLayer");
@@ -204,16 +215,18 @@ public partial class DebugDrawComponent : Node
             }
         }
 
-        if (_screenSurface == null || !IsInstanceValid(_screenSurface))
+        // Create or use provided screen surface
+        if (ScreenSurface == null || !IsInstanceValid(ScreenSurface))
         {
-            _screenSurface = _screenCanvasLayer.GetNodeOrNull<ScreenSurface>("ScreenSurface");
-            if (_screenSurface == null)
+            var foundSurface = _screenCanvasLayer.GetNodeOrNull<ScreenSurface>("ScreenSurface");
+            if (foundSurface == null)
             {
-                _screenSurface = new ScreenSurface { Name = "ScreenSurface" };
-                _screenCanvasLayer.AddChild(_screenSurface);
+                foundSurface = new ScreenSurface { Name = "ScreenSurface" };
+                _screenCanvasLayer.AddChild(foundSurface);
             }
-            _screenSurface.Initialize(this);
+            ScreenSurface = foundSurface;
         }
+        ScreenSurface.Initialize(this);
     }
 
     #endregion
