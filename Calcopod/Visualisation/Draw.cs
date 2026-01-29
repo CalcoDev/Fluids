@@ -79,7 +79,9 @@ public static class Draw
         DrawSpace space = DrawSpace.World,
         int layer = 0,
         float duration = 0f,
-        float animDuration = 0f)
+        float animDuration = 0f,
+        LineCaps lineCaps = default,
+        AntiAlias antiAlias = default)
     {
         var target = CurrentTarget;
         if (target == null) return;
@@ -93,7 +95,9 @@ public static class Draw
             Space = space,
             Layer = layer,
             TimeRemaining = duration,
-            AnimDuration = animDuration
+            AnimDuration = animDuration,
+            LineCaps = lineCaps != default ? lineCaps : target.DefaultLineCaps,
+            AntiAlias = antiAlias != default ? antiAlias : target.DefaultAntiAlias
         });
     }
 
@@ -108,7 +112,9 @@ public static class Draw
         DrawSpace space = DrawSpace.World,
         int layer = 0,
         float duration = 0f,
-        float animDuration = 0f)
+        float animDuration = 0f,
+        LineCaps lineCaps = default,
+        AntiAlias antiAlias = default)
     {
         var target = CurrentTarget;
         if (target == null) return;
@@ -122,7 +128,9 @@ public static class Draw
             Space = space,
             Layer = layer,
             TimeRemaining = duration,
-            AnimDuration = animDuration
+            AnimDuration = animDuration,
+            LineCaps = lineCaps != default ? lineCaps : target.DefaultLineCaps,
+            AntiAlias = antiAlias != default ? antiAlias : target.DefaultAntiAlias
         });
     }
 
@@ -137,7 +145,9 @@ public static class Draw
         DrawSpace space = DrawSpace.World,
         int layer = 0,
         float duration = 0f,
-        float animDuration = 0f)
+        float animDuration = 0f,
+        LineCaps lineCaps = default,
+        AntiAlias antiAlias = default)
     {
         var target = CurrentTarget;
         if (target == null) return;
@@ -151,7 +161,9 @@ public static class Draw
             Space = space,
             Layer = layer,
             TimeRemaining = duration,
-            AnimDuration = animDuration
+            AnimDuration = animDuration,
+            LineCaps = lineCaps != default ? lineCaps : target.DefaultLineCaps,
+            AntiAlias = antiAlias != default ? antiAlias : target.DefaultAntiAlias
         });
     }
 
@@ -167,7 +179,8 @@ public static class Draw
         DrawSpace space = DrawSpace.World,
         int layer = 0,
         float duration = 0f,
-        float animDuration = 0f)
+        float animDuration = 0f,
+        AntiAlias antiAlias = default)
     {
         var target = CurrentTarget;
         if (target == null) return;
@@ -182,7 +195,8 @@ public static class Draw
             Space = space,
             Layer = layer,
             TimeRemaining = duration,
-            AnimDuration = animDuration
+            AnimDuration = animDuration,
+            AntiAlias = antiAlias != default ? antiAlias : target.DefaultAntiAlias
         });
     }
 
@@ -199,7 +213,8 @@ public static class Draw
         DrawSpace space = DrawSpace.World,
         int layer = 0,
         float duration = 0f,
-        float animDuration = 0f)
+        float animDuration = 0f,
+        AntiAlias antiAlias = default)
     {
         var target = CurrentTarget;
         if (target == null) return;
@@ -215,7 +230,8 @@ public static class Draw
             Space = space,
             Layer = layer,
             TimeRemaining = duration,
-            AnimDuration = animDuration
+            AnimDuration = animDuration,
+            AntiAlias = antiAlias != default ? antiAlias : target.DefaultAntiAlias
         });
     }
 
@@ -269,7 +285,9 @@ public static class Draw
         DrawSpace space = DrawSpace.World,
         int layer = 0,
         float duration = 0f,
-        float animDuration = 0f)
+        float animDuration = 0f,
+        LineCaps lineCaps = default,
+        AntiAlias antiAlias = default)
     {
         var target = CurrentTarget;
         if (target == null) return;
@@ -284,7 +302,9 @@ public static class Draw
             Space = space,
             Layer = layer,
             TimeRemaining = duration,
-            AnimDuration = animDuration
+            AnimDuration = animDuration,
+            LineCaps = lineCaps != default ? lineCaps : target.DefaultLineCaps,
+            AntiAlias = antiAlias != default ? antiAlias : target.DefaultAntiAlias
         });
     }
 
@@ -299,7 +319,9 @@ public static class Draw
         DrawSpace space = DrawSpace.World,
         int layer = 0,
         float duration = 0f,
-        float animDuration = 0f)
+        float animDuration = 0f,
+        LineCaps lineCaps = default,
+        AntiAlias antiAlias = default)
     {
         var target = CurrentTarget;
         if (target == null) return;
@@ -313,7 +335,9 @@ public static class Draw
             Space = space,
             Layer = layer,
             TimeRemaining = duration,
-            AnimDuration = animDuration
+            AnimDuration = animDuration,
+            LineCaps = lineCaps != default ? lineCaps : target.DefaultLineCaps,
+            AntiAlias = antiAlias != default ? antiAlias : target.DefaultAntiAlias
         });
     }
 
@@ -328,7 +352,9 @@ public static class Draw
         DrawSpace space = DrawSpace.World,
         int layer = 0,
         float duration = 0f,
-        float animDuration = 0f)
+        float animDuration = 0f,
+        LineCaps lineCaps = default,
+        AntiAlias antiAlias = default)
     {
         var target = CurrentTarget;
         if (target == null) return;
@@ -342,7 +368,9 @@ public static class Draw
             Space = space,
             Layer = layer,
             TimeRemaining = duration,
-            AnimDuration = animDuration
+            AnimDuration = animDuration,
+            LineCaps = lineCaps != default ? lineCaps : target.DefaultLineCaps,
+            AntiAlias = antiAlias != default ? antiAlias : target.DefaultAntiAlias
         });
     }
 
@@ -358,7 +386,9 @@ public static class Draw
         DrawSpace space = DrawSpace.World,
         int layer = 0,
         float duration = 0f,
-        float animDuration = 0f)
+        float animDuration = 0f,
+        LineCaps lineCaps = default,
+        AntiAlias antiAlias = default)
     {
         var target = CurrentTarget;
         if (target == null) return;
@@ -373,7 +403,9 @@ public static class Draw
             Space = space,
             Layer = layer,
             TimeRemaining = duration,
-            AnimDuration = animDuration
+            AnimDuration = animDuration,
+            LineCaps = lineCaps != default ? lineCaps : target.DefaultLineCaps,
+            AntiAlias = antiAlias != default ? antiAlias : target.DefaultAntiAlias
         });
     }
 

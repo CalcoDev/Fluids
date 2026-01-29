@@ -69,6 +69,18 @@ public partial class DebugDrawComponent : Node
     [Export]
     public DrawSpace DefaultSpace { get; set; } = DrawSpace.World;
 
+    /// <summary>
+    /// Default line caps style for draw commands.
+    /// </summary>
+    [Export]
+    public LineCaps DefaultLineCaps { get; set; } = LineCaps.Flat;
+
+    /// <summary>
+    /// Default anti-aliasing mode for draw commands.
+    /// </summary>
+    [Export]
+    public AntiAlias DefaultAntiAlias { get; set; } = AntiAlias.Disabled;
+
     #endregion
 
     #region Fonts

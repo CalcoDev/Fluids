@@ -11,6 +11,17 @@ public class LineCommand : DrawCommand
     {
         float t = GetAnimT();
         Vector2 end = From.Lerp(To, t);
-        canvas.DrawLine(From, end, Color, Thickness);
+
+        // Draw line with anti-aliasing if enabled
+        var antiAlias = AntiAlias == AntiAlias.Enabled;
+        canvas.DrawLine(From, end, Color, Thickness, antiAlias);
+
+        // Draw rounded caps if needed
+        if (LineCaps == LineCaps.Round && Thickness > 0)
+        {
+            float radius = Thickness / 2f;
+            canvas.DrawCircle(From, radius, Color, antiAlias);
+            canvas.DrawCircle(end, radius, Color, antiAlias);
+        }
     }
 }

@@ -17,17 +17,27 @@ public class PolylineCommand : DrawCommand
 
         if (pointsToDraw.Length < 2) return;
 
+        var antiAlias = AntiAlias == AntiAlias.Enabled;
+
         if (Closed && pointsToDraw.Length == Points.Count)
         {
             // Draw as closed polygon outline
             var closedPoints = new Vector2[pointsToDraw.Length + 1];
             pointsToDraw.CopyTo(closedPoints, 0);
             closedPoints[^1] = pointsToDraw[0];
-            canvas.DrawPolyline(closedPoints, Color, Thickness);
+            canvas.DrawPolyline(closedPoints, Color, Thickness, antiAlias);
         }
         else
         {
-            canvas.DrawPolyline(pointsToDraw, Color, Thickness);
+            canvas.DrawPolyline(pointsToDraw, Color, Thickness, antiAlias);
+        }
+
+        // Draw rounded caps if needed
+        if (LineCaps == LineCaps.Round && Thickness > 0)
+        {
+            float radius = Thickness / 2f;
+            canvas.DrawCircle(pointsToDraw[0], radius, Color, antiAlias);
+            canvas.DrawCircle(pointsToDraw[^1], radius, Color, antiAlias);
         }
     }
 

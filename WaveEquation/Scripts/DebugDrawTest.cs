@@ -262,25 +262,5 @@ public partial class DebugDrawTest : Node
                 layer: 0);
         }
         Draw.Text(new Vector2(600, 260), "Rainbow spectrum", Colors.White, DrawFontKind.Mono, size: 11f);
-
-        // ==============================================================
-        // SCOPE OVERRIDE TEST
-        // ==============================================================
-
-        // Test 22: Use scope override (if another component exists)
-        Draw.Text(new Vector2(600, 300), "Scope Override (if active component exists)", Colors.White, DrawFontKind.Mono, size: 10f);
-
-        // ==============================================================
-        // HELP TEXT
-        // ==============================================================
-
-        Draw.Text(
-            new Vector2(10, _node2D!.GetViewportRect().Size.Y - 20),
-            "DebugDrawTest: Tests all DebugDraw2D features. Move mouse to test interactivity.",
-            Colors.White,
-            DrawFontKind.Mono,
-            size: 11f,
-            space: DrawSpace.Screen,
-            layer: 100);
     }
 }

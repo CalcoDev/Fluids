@@ -12,14 +12,15 @@ public class CircleCommand : DrawCommand
     {
         float t = GetAnimT();
         float animRadius = Radius * t;
+        var antiAlias = AntiAlias == AntiAlias.Enabled;
 
         if (Filled)
         {
-            canvas.DrawCircle(Center, animRadius, Color);
+            canvas.DrawCircle(Center, animRadius, Color, antiAlias);
         }
         else
         {
-            canvas.DrawArc(Center, animRadius, 0, Mathf.Tau, 64, Color, Thickness);
+            canvas.DrawArc(Center, animRadius, 0, Mathf.Tau, 64, Color, Thickness, antiAlias);
         }
     }
 }

@@ -13,8 +13,18 @@ public class ArrowCommand : DrawCommand
         float t = GetAnimT();
         Vector2 end = From.Lerp(To, t);
 
+        var antiAlias = AntiAlias == AntiAlias.Enabled;
+
         // Draw shaft
-        canvas.DrawLine(From, end, Color, Thickness);
+        canvas.DrawLine(From, end, Color, Thickness, antiAlias);
+
+        // Draw rounded caps if needed
+        if (LineCaps == LineCaps.Round && Thickness > 0)
+        {
+            float radius = Thickness / 2f;
+            canvas.DrawCircle(From, radius, Color, antiAlias);
+            canvas.DrawCircle(end, radius, Color, antiAlias);
+        }
 
         // Draw head only when animation is mostly complete (last 20%)
         if (t > 0.8f)
@@ -30,8 +40,16 @@ public class ArrowCommand : DrawCommand
             Vector2 left = headBase + perp * animHeadSize * 0.5f;
             Vector2 right = headBase - perp * animHeadSize * 0.5f;
 
-            canvas.DrawLine(end, left, Color, Thickness);
-            canvas.DrawLine(end, right, Color, Thickness);
+            canvas.DrawLine(end, left, Color, Thickness, antiAlias);
+            canvas.DrawLine(end, right, Color, Thickness, antiAlias);
+
+            // Round caps on arrow head if needed
+            if (LineCaps == LineCaps.Round && Thickness > 0)
+            {
+                float radius = Thickness / 2f;
+                canvas.DrawCircle(left, radius, Color, antiAlias);
+                canvas.DrawCircle(right, radius, Color, antiAlias);
+            }
         }
     }
 }

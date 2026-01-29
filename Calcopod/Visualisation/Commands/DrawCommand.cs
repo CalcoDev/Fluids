@@ -11,6 +11,8 @@ public abstract class DrawCommand
     public int Layer { get; set; }
     public Color Color { get; set; }
     public float Thickness { get; set; } = 1f;
+    public LineCaps LineCaps { get; set; } = LineCaps.Flat;
+    public AntiAlias AntiAlias { get; set; } = AntiAlias.Disabled;
 
     // Lifetime
     public float TimeRemaining { get; set; }
